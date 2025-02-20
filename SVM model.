@@ -1,0 +1,80 @@
+The study likely involved data processing and classification using Python. Below is an example implementation of how you might process voltage signals, convert them to spectrograms, and classify respiratory activities using an SVM model.
+
+Step 1: Load and Preprocess Data
+python
+Copy
+Edit
+import numpy as np
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+# Load sample audio files (Replace with actual smart mask voltage data)
+def load_audio(file_path):
+    signal, sr = librosa.load(file_path, sr=22050)  # Load audio file
+    return signal, sr
+
+# Extract features (HNR, Spectrogram-based Features)
+def extract_features(signal, sr):
+    # Compute spectrogram
+    stft = np.abs(librosa.stft(signal))
+    spectral_centroid = librosa.feature.spectral_centroid(y=signal, sr=sr).mean()
+    
+    # Compute HNR (approximated using spectral flatness)
+    spectral_flatness = librosa.feature.spectral_flatness(y=signal).mean()
+    
+    return np.array([spectral_centroid, spectral_flatness])
+
+# Example file paths (Replace with actual data)
+breath_signal, sr = load_audio("breath.wav")
+cough_signal, sr = load_audio("cough.wav")
+speech_signal, sr = load_audio("speech.wav")
+
+# Extract features
+features = np.array([
+    extract_features(breath_signal, sr),
+    extract_features(cough_signal, sr),
+    extract_features(speech_signal, sr)
+])
+
+labels = np.array([0, 1, 2])  # 0: Breath, 1: Cough, 2: Speech
+Step 2: Train an SVM Classifier
+python
+Copy
+Edit
+# Split data (Assume a larger dataset)
+X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.3, random_state=42)
+
+# Train SVM model
+svm_model = SVC(kernel='linear')
+svm_model.fit(X_train, y_train)
+
+# Predict
+y_pred = svm_model.predict(X_test)
+
+# Evaluate model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
+Step 3: Visualize Spectrogram (Optional)
+python
+Copy
+Edit
+def plot_spectrogram(signal, sr, title):
+    plt.figure(figsize=(10, 4))
+    D = librosa.amplitude_to_db(np.abs(librosa.stft(signal)), ref=np.max)
+    librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='log')
+    plt.colorbar(format='%+2.0f dB')
+    plt.title(title)
+    plt.show()
+
+plot_spectrogram(breath_signal, sr, "Breath Spectrogram")
+plot_spectrogram(cough_signal, sr, "Cough Spectrogram")
+plot_spectrogram(speech_signal, sr, "Speech Spectrogram")
+Possible Enhancements
+Train on more data samples to improve generalization.
+Use Deep Learning (CNNs, LSTMs) instead of SVM for better feature extraction.
+Deploy the trained model in a real-time smart mask application using Raspberry Pi / Edge AI.
+Would you like modifications or further explanations? 🚀
