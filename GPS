@@ -1,0 +1,30 @@
+import numpy as np
+from scipy.optimize import least_squares
+
+def trilateration(satellites, distances):
+    def residuals(p, satellites, distances):
+        x, y, z = p
+        return [(np.sqrt((x - sx)**2 + (y - sy)**2 + (z - sz)**2) - d) for (sx, sy, sz), d in zip(satellites, distances)]
+    
+    # Initial guess (can be improved if we have a better idea of the receiver's location)
+    initial_guess = np.array([0, 0, 0])
+    
+    # Solve using least squares optimization
+    result = least_squares(residuals, initial_guess, args=(satellites, distances))
+    
+    return result.x  # Estimated (x, y, z) position
+
+# Example satellite positions (x, y, z) in meters
+satellites = [
+    (15600, 7540, 20140),
+    (18760, 2750, 18610),
+    (17610, 14630, 13480),
+    (19170, 610, 18390)  # Fourth satellite helps in real cases
+]
+
+# Distances to the receiver in meters
+distances = [20200, 21000, 23000, 24000]
+
+# Compute estimated position
+receiver_position = trilateration(satellites, distances)
+print("Estimated Receiver Position (x, y, z):", receiver_position)
