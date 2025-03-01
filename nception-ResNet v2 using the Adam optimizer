@@ -1,0 +1,55 @@
+import tensorflow as tf
+from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+
+# Load the pre-trained Inception-ResNet v2 model without the top layer
+base_model = InceptionResNetV2(weights="imagenet", include_top=False, input_shape=(299, 299, 3))
+
+# Freeze the base model layers (for feature extraction)
+base_model.trainable = False
+
+# Add custom layers on top
+x = Flatten()(base_model.output)
+x = Dense(512, activation='relu')(x)
+x = Dropout(0.5)(x)
+output_layer = Dense(10, activation='softmax')  # Change the units based on your dataset
+
+# Create the final model
+model = Model(inputs=base_model.input, outputs=output_layer)
+
+# Compile the model with Adam optimizer
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Print model summary
+model.summary()
+
+# Data augmentation for training
+train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=30, zoom_range=0.2, horizontal_flip=True)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+# Load dataset (replace with your custom dataset directory)
+train_generator = train_datagen.flow_from_directory("dataset/train", target_size=(299, 299), batch_size=32, class_mode='categorical')
+test_generator = test_datagen.flow_from_directory("dataset/test", target_size=(299, 299), batch_size=32, class_mode='categorical')
+
+# Train the model
+history = model.fit(train_generator, epochs=10, validation_data=test_generator)
+
+# Plot accuracy and loss
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.legend()
+plt.title("Accuracy")
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.legend()
+plt.title("Loss")
+
+plt.show()
