@@ -1,0 +1,67 @@
+Tensorflow:
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+# Define the LeNet-5 model
+def lenet5():
+    model = models.Sequential([
+        layers.Conv2D(6, (5,5), activation='tanh', input_shape=(32,32,1)),  # C1
+        layers.AveragePooling2D((2,2)),  # S2
+        layers.Conv2D(16, (5,5), activation='tanh'),  # C3
+        layers.AveragePooling2D((2,2)),  # S4
+        layers.Conv2D(120, (5,5), activation='tanh'),  # C5
+        layers.Flatten(),
+        layers.Dense(84, activation='tanh'),  # F6
+        layers.Dense(10, activation='softmax')  # Output layer
+    ])
+    
+    # Compile the model
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    
+    return model
+
+# Create the model
+model = lenet5()
+
+# Print model summary
+model.summary
+PyTorch Implementation
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+# Define LeNet-5 Model
+class LeNet5(nn.Module):
+    def __init__(self):
+        super(LeNet5, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
+        self.pool = nn.AvgPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.conv3 = nn.Conv2d(16, 120, kernel_size=5)
+        self.fc1 = nn.Linear(120, 84)
+        self.fc2 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = F.tanh(self.conv1(x))  
+        x = self.pool(x)
+        x = F.tanh(self.conv2(x))
+        x = self.pool(x)
+        x = F.tanh(self.conv3(x))
+        x = torch.flatten(x, 1)  # Flatten
+        x = F.tanh(self.fc1(x))
+        x = self.fc2(x)  # Output (softmax applied in loss function)
+        return x
+
+# Instantiate the model
+model = LeNet5()
+
+# Print model summary
+print(model)
+🔹 Key Features
+✅ Uses tanh activation like the original LeNet-5
+✅ Uses average pooling instead of max pooling
+✅ Suitable for grayscale (1-channel) 32×32 images
+
+ need help training it on MNIST? 🚀
