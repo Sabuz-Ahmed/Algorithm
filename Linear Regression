@@ -1,0 +1,30 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
+# Sample Data (One Feature)
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).reshape(-1, 1)
+Y = np.array([2, 3, 5, 6, 7, 8, 10, 11, 12, 14])  # Target Variable
+
+# Split Data (80% Training, 20% Testing)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+# Train Linear Regression Model
+model = LinearRegression()
+model.fit(X_train, Y_train)
+
+# Predictions
+Y_pred = model.predict(X_test)
+
+# Visualization
+plt.scatter(X, Y, color='blue', label="Actual Data")
+plt.plot(X_test, Y_pred, color='red', linewidth=2, label="Regression Line")
+plt.xlabel("X (Feature)")
+plt.ylabel("Y (Target)")
+plt.legend()
+plt.show()
+
+# Model Coefficients
+print("Slope (m):", model.coef_[0])
+print("Intercept (c):", model.intercept_)
