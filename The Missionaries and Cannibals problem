@@ -1,0 +1,75 @@
+def missionaries_and_cannibals(initial_state, goal_state):
+    """
+    Solves the Missionaries and Cannibals problem using a breadth-first search.
+
+    Args:
+        initial_state: A tuple representing the initial state (M_left, C_left, boat_left, M_right, C_right).
+        goal_state: A tuple representing the goal state (M_left, C_left, boat_left, M_right, C_right).
+
+    Returns:
+        A list of states representing the solution path, or None if no solution is found.
+    """
+
+    def is_valid(state):
+        """Checks if a given state is valid."""
+        M_left, C_left, _, M_right, C_right = state
+        if M_left < 0 or C_left < 0 or M_right < 0 or C_right < 0:
+            return False
+        if (M_left > 0 and M_left < C_left) or (M_right > 0 and M_right < C_right):
+            return False
+        if M_left > 3 or C_left > 3 or M_right > 3 or C_right > 3:
+            return False
+        return True
+
+    def get_next_states(state):
+        """Generates all possible next states from a given state."""
+        M_left, C_left, boat_left, M_right, C_right = state
+        next_states = []
+        boat_capacity = 2
+
+        moves = [
+            (1, 0), (2, 0), (0, 1), (0, 2), (1, 1)
+        ]  # Possible moves (missionaries, cannibals)
+
+        if boat_left:  # Boat is on the left
+            for m, c in moves:
+                new_state = (M_left - m, C_left - c, 0, M_right + m, C_right + c)
+                if is_valid(new_state):
+                    next_states.append(new_state)
+        else:  # Boat is on the right
+            for m, c in moves:
+                new_state = (M_left + m, C_left + c, 1, M_right - m, C_right - c)
+                if is_valid(new_state):
+                    next_states.append(new_state)
+
+        return next_states
+
+    queue = [(initial_state, [initial_state])]  # Queue of (state, path)
+    visited = set()
+
+    while queue:
+        current_state, path = queue.pop(0)
+
+        if current_state == goal_state:
+            return path
+
+        visited.add(current_state)
+
+        for next_state in get_next_states(current_state):
+            if next_state not in visited:
+                queue.append((next_state, path + [next_state]))
+                visited.add(next_state)
+
+    return None  # No solution found
+
+# Example usage:
+initial_state = (3, 3, 1, 0, 0)  # 3 missionaries, 3 cannibals, boat on the left
+goal_state = (0, 0, 0, 3, 3)  # All on the right
+solution = missionaries_and_cannibals(initial_state, goal_state)
+
+if solution:
+    print("Solution found:")
+    for state in solution:
+        print(state)
+else:
+    print("No solution found.")
