@@ -1,0 +1,29 @@
+import pandas as pd
+import statsmodels.api as sm
+
+# Sample Data (replace with your own data)
+data = {
+    'y': [5, 7, 9, 11, 13, 15],
+    'x1': [1, 2, 3, 4, 5, 6],
+    'x2': [2, 3, 4, 5, 6, 7]
+}
+df = pd.DataFrame(data)
+
+# Add a constant (intercept) to the independent variables
+X = sm.add_constant(df[['x1', 'x2']])
+y = df['y']
+
+# Fit the multiple regression model
+model = sm.OLS(y, X).fit()
+
+# Print the model summary
+print(model.summary())
+
+# Make predictions
+predictions = model.predict(X)
+print("\nPredictions:\n", predictions)
+
+#Example of predicting a new value.
+new_data = pd.DataFrame({'const':[1],'x1': [7], 'x2': [8]})
+new_prediction = model.predict(new_data)
+print("\nPrediction for new data:\n", new_prediction)
