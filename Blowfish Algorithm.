@@ -1,0 +1,91 @@
+def blowfish_encrypt(plaintext, key):
+    """
+    Simplified Blowfish encryption (not a full implementation).
+
+    This example demonstrates the core concepts of Blowfish but is not secure
+    for real-world use.  It lacks proper key expansion and round functions.
+    For serious encryption, use a well-vetted library.
+
+    Args:
+        plaintext: The 64-bit plaintext as an integer.
+        key: The key as a byte string.
+
+    Returns:
+        The 64-bit ciphertext as an integer.
+    """
+
+    def f(x):
+        # A very simplified f-function. Real Blowfish uses S-boxes.
+        h = ((x + subkeys[0]) & 0xFFFFFFFF)  # simulate 32 bit addition
+        return (h * h) & 0xFFFFFFFF
+
+    def encrypt_round(left, right, round_num):
+        new_left = right ^ f(left)
+        new_right = left
+        return new_left, new_right
+
+    # Very simplified key scheduling (not real Blowfish)
+    subkeys = [int.from_bytes(key[i:i + 4], 'big') for i in range(0, len(key), 4)]
+    if len(subkeys) < 18:
+      subkeys.extend([0]*(18-len(subkeys))) #pad with zeros.
+
+    left = (plaintext >> 32) & 0xFFFFFFFF
+    right = plaintext & 0xFFFFFFFF
+
+    for i in range(16):  # Simplified 16 rounds
+        left, right = encrypt_round(left, right, i)
+
+    left, right = right, left  # Swap left and right after final round
+    ciphertext = (left << 32) | right
+    return ciphertext
+
+def blowfish_decrypt(ciphertext, key):
+    """
+    Simplified Blowfish decryption (not a full implementation).
+
+    This example demonstrates the core concepts of Blowfish but is not secure
+    for real-world use.  It lacks proper key expansion and round functions.
+    For serious encryption, use a well-vetted library.
+
+    Args:
+        ciphertext: The 64-bit ciphertext as an integer.
+        key: The key as a byte string.
+
+    Returns:
+        The 64-bit plaintext as an integer.
+    """
+
+    def f(x):
+        # A very simplified f-function. Real Blowfish uses S-boxes.
+        h = ((x + subkeys[0]) & 0xFFFFFFFF) # simulate 32 bit addition
+        return (h * h) & 0xFFFFFFFF
+
+    def decrypt_round(left, right, round_num):
+        new_right = left ^ f(right)
+        new_left = right
+        return new_left, new_right
+
+    # Very simplified key scheduling (not real Blowfish)
+    subkeys = [int.from_bytes(key[i:i + 4], 'big') for i in range(0, len(key), 4)]
+    if len(subkeys) < 18:
+      subkeys.extend([0]*(18-len(subkeys))) #pad with zeros.
+
+    left = (ciphertext >> 32) & 0xFFFFFFFF
+    right = ciphertext & 0xFFFFFFFF
+
+    for i in range(16):  # Simplified 16 rounds (in reverse order)
+        left, right = decrypt_round(left, right, i)
+
+    left, right = right, left  # Swap left and right after final round
+    plaintext = (left << 32) | right
+    return plaintext
+
+# Example usage:
+key = b"MySecretKey"  # Example key (use a strong, random key)
+plaintext = 0x123456789ABCDEF0  # Example 64-bit plaintext
+ciphertext = blowfish_encrypt(plaintext, key)
+decrypted_plaintext = blowfish_decrypt(ciphertext, key)
+
+print(f"Plaintext: 0x{plaintext:X}")
+print(f"Ciphertext: 0x{ciphertext:X}")
+print(f"Decrypted plaintext: 0x{decrypted_plaintext:X}")
