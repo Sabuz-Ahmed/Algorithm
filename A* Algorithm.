@@ -1,0 +1,95 @@
+import heapq
+
+def a_star(graph, start, goal, heuristic):
+    """
+    A* search algorithm.
+
+    Args:
+        graph: A dictionary representing the graph. Keys are nodes, and values are lists of (neighbor, cost) tuples.
+        start: The starting node.
+        goal: The goal node.
+        heuristic: A dictionary or function that estimates the cost from a node to the goal.
+
+    Returns:
+        A tuple containing the shortest path (list of nodes) and its cost, or None if no path is found.
+    """
+
+    open_list = [(0 + heuristic(start, goal), 0, start, [])]  # (f_score, g_score, node, path)
+    closed_set = set()
+
+    while open_list:
+        f_score, g_score, current, path = heapq.heappop(open_list)
+
+        if current == goal:
+            return path + [current], g_score
+
+        if current in closed_set:
+            continue
+
+        closed_set.add(current)
+
+        for neighbor, cost in graph.get(current, []):
+            new_g_score = g_score + cost
+            new_f_score = new_g_score + heuristic(neighbor, goal)
+
+            # Check if neighbor is in open_list with a higher g_score
+            neighbor_in_open = False
+            for i in range(len(open_list)):
+                if open_list[i][2] == neighbor and open_list[i][1] <= new_g_score:
+                    neighbor_in_open = True
+                    break
+
+            if neighbor_in_open:
+                continue
+
+            heapq.heappush(open_list, (new_f_score, new_g_score, neighbor, path + [current]))
+
+    return None  # No path found
+
+# Example Usage:
+
+graph = {
+    'A': [('B', 1), ('C', 4)],
+    'B': [('A', 1), ('D', 5), ('E', 12)],
+    'C': [('A', 4), ('F', 15)],
+    'D': [('B', 5), ('E', 3)],
+    'E': [('B', 12), ('D', 3), ('Z', 5)],
+    'F': [('C', 15), ('Z', 10)],
+    'Z': [('E', 5), ('F', 10)]
+}
+
+def heuristic(node, goal):
+    # Example heuristic (Euclidean distance could be used in a grid)
+    # This example is a simple admissible heuristic.
+    heuristic_values = {
+        'A': 10,
+        'B': 8,
+        'C': 5,
+        'D': 7,
+        'E': 3,
+        'F': 6,
+        'Z': 0,
+    }
+    return heuristic_values.get(node, float('inf')) # return infinity if no heuristic is available
+
+start_node = 'A'
+goal_node = 'Z'
+
+result = a_star(graph, start_node, goal_node, heuristic)
+
+if result:
+    path, cost = result
+    print(f"Shortest path from {start_node} to {goal_node}: {path}")
+    print(f"Cost of the path: {cost}")
+else:
+    print(f"No path found from {start_node} to {goal_node}")
+
+#Example of a grid based heuristic, if the graph was a grid.
+def manhattan_distance(node, goal):
+    """
+    Manhattan distance heuristic for grid-based graphs.
+    """
+    node_coords = {'A': (0, 0), 'B': (1, 0), 'C': (0, 1), 'D': (2, 0), 'E': (2, 1), 'F': (0, 2), 'Z': (2, 2)}
+    goal_coords = node_coords[goal]
+    current_coords = node_coords[node]
+    return abs(current_coords[0] - goal_coords[0]) + abs(current_coords[1] - goal_coords[1])
