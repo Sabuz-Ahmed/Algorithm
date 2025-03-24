@@ -1,0 +1,130 @@
+def minimax(board, depth, maximizing_player, evaluate_function):
+    """
+    Minimax algorithm for game AI.
+
+    Args:
+        board: The current game board state.
+        depth: The current depth of the search tree.
+        maximizing_player: True if it's the maximizing player's turn, False otherwise.
+        evaluate_function: A function that evaluates the board state.
+
+    Returns:
+        The best score (for the maximizing player) or worst score (for the minimizing player).
+    """
+
+    if is_terminal(board) or depth == 0:
+        return evaluate_function(board)
+
+    if maximizing_player:
+        best_score = float('-inf')
+        for move in get_possible_moves(board):
+            new_board = make_move(board, move)
+            score = minimax(new_board, depth - 1, False, evaluate_function)
+            best_score = max(best_score, score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for move in get_possible_moves(board):
+            new_board = make_move(board, move)
+            score = minimax(new_board, depth - 1, True, evaluate_function)
+            best_score = min(best_score, score)
+        return best_score
+
+def find_best_move(board, depth, evaluate_function):
+    """
+    Finds the best move for the maximizing player using the minimax algorithm.
+
+    Args:
+        board: The current game board state.
+        depth: The depth of the search tree.
+        evaluate_function: A function that evaluates the board state.
+
+    Returns:
+        The best move.
+    """
+
+    best_move = None
+    best_score = float('-inf')
+
+    for move in get_possible_moves(board):
+        new_board = make_move(board, move)
+        score = minimax(new_board, depth - 1, False, evaluate_function)
+
+        if score > best_score:
+            best_score = score
+            best_move = move
+
+    return best_move
+
+# Example game functions (replace with your game's logic)
+def is_terminal(board):
+    # Check if the game is over (win, loss, or draw)
+    # Replace with your specific game's terminal condition.
+    return False #Example, change this to your game's logic
+
+def get_possible_moves(board):
+    # Returns a list of possible moves from the current board state.
+    # Replace with your specific game's move generation.
+    return [] #Example, change this to your game's logic
+
+def make_move(board, move):
+    # Applies the given move to the board and returns the new board state.
+    # Replace with your specific game's move application.
+    return board #Example, change this to your game's logic
+
+def evaluate_function(board):
+    # Evaluates the board state and returns a score.
+    # Higher scores are better for the maximizing player.
+    # Replace with your specific game's evaluation function.
+    return 0 #Example, change this to your game's logic
+
+# Example usage (replace with your game's initial board and depth)
+# initial_board = ...
+# depth = 3
+# best_move = find_best_move(initial_board, depth, evaluate_function)
+# print(f"Best move: {best_move}")
+
+# Example with Alpha-Beta Pruning.
+
+def minimax_alpha_beta(board, depth, maximizing_player, alpha, beta, evaluate_function):
+    if is_terminal(board) or depth == 0:
+        return evaluate_function(board)
+
+    if maximizing_player:
+        best_score = float('-inf')
+        for move in get_possible_moves(board):
+            new_board = make_move(board, move)
+            best_score = max(best_score, minimax_alpha_beta(new_board, depth - 1, False, alpha, beta, evaluate_function))
+            alpha = max(alpha, best_score)
+            if beta <= alpha:
+                break # Beta cutoff
+        return best_score
+    else:
+        best_score = float('inf')
+        for move in get_possible_moves(board):
+            new_board = make_move(board, move)
+            best_score = min(best_score, minimax_alpha_beta(new_board, depth - 1, True, alpha, beta, evaluate_function))
+            beta = min(beta, best_score)
+            if beta <= alpha:
+                break # Alpha cutoff
+        return best_score
+
+def find_best_move_alpha_beta(board, depth, evaluate_function):
+    best_move = None
+    best_score = float('-inf')
+    alpha = float('-inf')
+    beta = float('inf')
+
+    for move in get_possible_moves(board):
+        new_board = make_move(board, move)
+        score = minimax_alpha_beta(new_board, depth - 1, False, alpha, beta, evaluate_function)
+
+        if score > best_score:
+            best_score = score
+            best_move = move
+
+    return best_move
+
+# Example usage with alpha-beta pruning.
+#best_move = find_best_move_alpha_beta(initial_board, depth, evaluate_function)
+#print(f"Best move with alpha-beta: {best_move}")
