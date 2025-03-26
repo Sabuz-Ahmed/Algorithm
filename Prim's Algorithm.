@@ -1,0 +1,82 @@
+import heapq
+
+def prims_algorithm(graph):
+    """
+    Implements Prim's algorithm to find the Minimum Spanning Tree (MST) of a graph.
+
+    Args:
+        graph: A dictionary representing the weighted undirected graph.
+               The keys are the vertices, and the values are dictionaries
+               where keys are neighboring vertices and values are the edge weights.
+               Example:
+               graph = {
+                   'A': {'B': 2, 'D': 6},
+                   'B': {'A': 2, 'C': 3, 'D': 8},
+                   'C': {'B': 3, 'E': 5},
+                   'D': {'A': 6, 'B': 8, 'E': 9, 'F': 11},
+                   'E': {'C': 5, 'D': 9, 'F': 7},
+                   'F': {'D': 11, 'E': 7}
+               }
+
+    Returns:
+        A tuple containing:
+            - mst: A dictionary representing the MST in the same format as the input graph.
+            - total_weight: The total weight of the MST.
+    """
+    if not graph:
+        return {}, 0
+
+    start_node = next(iter(graph))  # Choose an arbitrary starting node
+    mst = {start_node: {}}
+    visited = {start_node}
+    priority_queue = []  # Min-heap to store edges with their weights
+
+    # Add initial edges from the starting node to the priority queue
+    for neighbor, weight in graph[start_node].items():
+        heapq.heappush(priority_queue, (weight, start_node, neighbor))
+
+    total_weight = 0
+
+    while priority_queue:
+        weight, u, v = heapq.heappop(priority_queue)
+
+        if v not in visited:
+            visited.add(v)
+            total_weight += weight
+
+            # Add the edge (u, v) to the MST
+            if u not in mst:
+                mst[u] = {}
+            mst[u][v] = weight
+            if v not in mst:
+                mst[v] = {}
+            mst[v][u] = weight
+
+            # Add new edges from the newly added vertex to the priority queue
+            for neighbor, w in graph[v].items():
+                if neighbor not in visited:
+                    heapq.heappush(priority_queue, (w, v, neighbor))
+
+    return mst, total_weight
+
+# Example Usage:
+if __name__ == "__main__":
+    graph = {
+        'A': {'B': 2, 'D': 6},
+        'B': {'A': 2, 'C': 3, 'D': 8},
+        'C': {'B': 3, 'E': 5},
+        'D': {'A': 6, 'B': 8, 'E': 9, 'F': 11},
+        'E': {'C': 5, 'D': 9, 'F': 7},
+        'F': {'D': 11, 'E': 7}
+    }
+
+    mst, total_weight = prims_algorithm(graph)
+
+    print("Minimum Spanning Tree:")
+    for node, neighbors in mst.items():
+        for neighbor, weight in neighbors.items():
+            # Avoid printing duplicate edges (since it's an undirected graph)
+            if node < neighbor:
+                print(f"({node} -- {neighbor}): {weight}")
+
+    print(f"\nTotal weight of MST: {total_weight}")
