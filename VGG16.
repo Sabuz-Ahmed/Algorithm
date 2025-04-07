@@ -1,0 +1,57 @@
+import tensorflow as tf
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.optimizers import Adam
+
+# Set input shape and number of classes
+input_shape = (224, 224, 3)
+num_classes = 3  # Example: ['Non-Demented', 'Very Mild Demented', 'Mild Demented']
+
+# Load pre-trained VGG16 model + higher level layers
+base_model = VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
+base_model.trainable = False  # Freeze convolutional layers
+
+# Add custom layers on top
+x = Flatten()(base_model.output)
+x = Dense(256, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(num_classes, activation='softmax')(x)
+
+# Create model
+model = Model(inputs=base_model.input, outputs=x)
+
+# Compile model
+model.compile(optimizer=Adam(learning_rate=0.0001),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Data preprocessing and augmentation
+train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+train_generator = train_datagen.flow_from_directory(
+    'dataset_path',  # replace with your dataset path
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    subset='training'
+)
+
+val_generator = train_datagen.flow_from_directory(
+    'dataset_path',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    subset='validation'
+)
+
+# Train model
+model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=10
+)
+
+# Save the model
+model.save("cognitive_decline_model.h5")
