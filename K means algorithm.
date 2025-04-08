@@ -1,0 +1,143 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+
+class KMeans:
+    """
+    K-Means clustering algorithm.
+    """
+    def __init__(self, n_clusters=3, max_iter=300, random_state=None):
+        """
+        Initializes the K-Means object.
+
+        Args:
+            n_clusters (int): The number of clusters to form.
+            max_iter (int): Maximum number of iterations of the k-means algorithm.
+            random_state (int): Determines random number generation for centroid initialization.
+                                 Pass an int for reproducible results across multiple function calls.
+        """
+        self.n_clusters = n_clusters
+        self.max_iter = max_iter
+        self.random_state = random_state
+        self.centroids = None
+        self.labels = None
+
+    def _initialize_centroids(self, X):
+        """
+        Initializes centroids randomly from the data points.
+
+        Args:
+            X (numpy.ndarray): The input data.
+
+        Returns:
+            numpy.ndarray: Initialized centroids.
+        """
+        rng = np.random.RandomState(self.random_state)
+        indices = rng.permutation(X.shape[0])[:self.n_clusters]
+        return X[indices]
+
+    def _assign_labels(self, X):
+        """
+        Assigns each data point to the closest centroid.
+
+        Args:
+            X (numpy.ndarray): The input data.
+
+        Returns:
+            numpy.ndarray: Array of cluster labels for each data point.
+        """
+        distances = np.sqrt(((X - self.centroids[:, np.newaxis])**2).sum(axis=2))
+        return np.argmin(distances, axis=0)
+
+    def _update_centroids(self, X, labels):
+        """
+        Updates the centroids based on the mean of the data points in each cluster.
+
+        Args:
+            X (numpy.ndarray): The input data.
+            labels (numpy.ndarray): The current cluster labels.
+
+        Returns:
+            numpy.ndarray: Updated centroids.
+        """
+        new_centroids = np.zeros((self.n_clusters, X.shape[1]))
+        for k in range(self.n_clusters):
+            cluster_points = X[labels == k]
+            if len(cluster_points) > 0:
+                new_centroids[k] = np.mean(cluster_points, axis=0)
+            else:
+                # Handle empty clusters (can happen with bad initialization)
+                # In a real-world scenario, you might want a more sophisticated approach
+                # like re-initializing the centroid. For simplicity, we'll keep the old one.
+                new_centroids[k] = self.centroids[k]
+        return new_centroids
+
+    def fit(self, X):
+        """
+        Fits the K-Means model to the input data.
+
+        Args:
+            X (numpy.ndarray): The training data.
+
+        Returns:
+            self: Returns the fitted KMeans object.
+        """
+        self.centroids = self._initialize_centroids(X)
+
+        for _ in range(self.max_iter):
+            old_centroids = self.centroids.copy()
+            self.labels = self._assign_labels(X)
+            self.centroids = self._update_centroids(X, self.labels)
+
+            # Check for convergence
+            if np.all(old_centroids == self.centroids):
+                break
+
+        return self
+
+    def predict(self, X):
+        """
+        Predicts the cluster labels for new data points.
+
+        Args:
+            X (numpy.ndarray): The new data.
+
+        Returns:
+            numpy.ndarray: Array of cluster labels for the new data points.
+        """
+        if self.centroids is None:
+            raise Exception("Model not fitted yet. Call fit() first.")
+        distances = np.sqrt(((X - self.centroids[:, np.newaxis])**2).sum(axis=2))
+        return np.argmin(distances, axis=0)
+
+# Example Usage:
+if __name__ == "__main__":
+    # Generate some sample data
+    X, y = make_blobs(n_samples=300, centers=3, cluster_std=0.60, random_state=0)
+
+    # Create a KMeans object with 3 clusters
+    kmeans = KMeans(n_clusters=3, random_state=42)
+
+    # Fit the model to the data
+    kmeans.fit(X)
+
+    # Get the cluster labels for the data
+    labels = kmeans.labels_
+
+    # Get the final centroids
+    centroids = kmeans.centroids
+
+    # Predict the cluster for new data points
+    new_data = np.array([[1, 2], [5, 8]])
+    new_labels = kmeans.predict(new_data)
+    print(f"Predictions for new data points: {new_labels}")
+
+    # Visualize the clusters and centroids
+    plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', s=50)
+    plt.scatter(centroids[:, 0], centroids[:, 1], c='red', marker='X', s=200, label='Centroids')
+    plt.scatter(new_data[:, 0], new_data[:, 1], c='purple', marker='o', s=100, label='New Data')
+    plt.title('K-Means Clustering')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.show()
