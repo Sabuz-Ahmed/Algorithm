@@ -1,0 +1,29 @@
+from ultralytics import YOLO
+
+# Load a pretrained YOLOv10 model
+model = YOLO('yolov10s.pt')  # You can choose other sizes like yolov10m.pt, etc.
+
+# Predict on an image
+results = model.predict(source='path/to/your/image.jpg')
+
+# Predict on a video
+results = model.predict(source='path/to/your/video.mp4')
+
+# Predict using your webcam
+results = model.predict(source=0)
+
+# Access the results
+for result in results:
+    boxes = result.boxes  # Bounding boxes
+    masks = result.masks  # Segmentation masks (if model supports it)
+    probs = result.probs  # Class probabilities
+
+    for box in boxes:
+        xyxy = box.xyxy[0].tolist()  # Bounding box coordinates (x1, y1, x2, y2)
+        confidence = box.conf[0].item()  # Confidence score
+        class_id = box.cls[0].item()  # Class ID
+
+        print(f"Detected object with class {class_id}, confidence: {confidence}, at {xyxy}")
+
+# Save the results (images/videos with detections)
+# By default, results are saved in runs/detect/predictX
