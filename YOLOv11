@@ -1,0 +1,16 @@
+from ultralytics import YOLO
+
+# Load a pretrained YOLO11 model (e.g., YOLO11n for nano size)
+model = YOLO("yolo11n.pt")
+
+# Perform prediction on an image
+results = model.predict("https://ultralytics.com/images/bus.jpg")
+
+# Train the model on a custom dataset (specify data YAML file and epochs)
+# results = model.train(data="coco8.yaml", epochs=3)
+
+# Validate the model on a dataset
+# metrics = model.val(data="coco8.yaml")
+
+# Export the model to a different format (e.g., ONNX)
+# path = model.export(format="onnx")
