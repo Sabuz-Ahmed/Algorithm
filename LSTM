@@ -1,0 +1,40 @@
+import tensorflow as tf
+
+# Define a sequential model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.LSTM(units=64, input_shape=(None, 1)),  # LSTM layer with 64 units, expecting time series data with 1 feature
+    tf.keras.layers.Dense(units=1)                         # Output layer with 1 unit for prediction
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse')
+
+# Print the model summary
+model.summary()
+import torch
+import torch.nn as nn
+
+class LSTMModel(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.lstm = nn.LSTM(input_size, hidden_size)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, input, hidden):
+        lstm_out, hidden = self.lstm(input, hidden)
+        output = self.fc(lstm_out[:, -1, :])  # Take the output of the last time step
+        return output, hidden
+
+    def init_hidden(self, batch_size):
+        weight = next(self.parameters())
+        return (weight.new_zeros(1, batch_size, self.hidden_size),
+                weight.new_zeros(1, batch_size, self.hidden_size))
+
+# Instantiate the model
+input_size = 1
+hidden_size = 64
+output_size = 1
+model = LSTMModel(input_size, hidden_size, output_size)
+
+print(model),
