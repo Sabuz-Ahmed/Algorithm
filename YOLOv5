@@ -1,0 +1,48 @@
+Here are some code examples demonstrating how to use YOLOv5 for object detection:
+
+Python - Using torch.hub:
+
+This is the simplest way to get started with YOLOv5.
+
+import torch
+
+# Load a pre-trained YOLOv5 model
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x
+
+# Load an image for detection
+img = 'https://ultralytics.com/images/zidane.jpg'  # or a local file, or a PIL/OpenCV image
+
+# Perform object detection
+results = model(img)
+
+# Print the results
+print(results)
+
+# Display the results (optional, requires matplotlib)
+results.show()
+
+# Save the results (optional)
+results.save(save_dir='results/')
+
+Python - Using the YOLOv5 repository:
+
+This provides more flexibility, allowing you to train, validate, and export models.
+
+First, clone the YOLOv5 repository:
+
+git clone https://github.com/ultralytics/yolov5
+cd yolov5
+pip install -r requirements.txt  # Install dependencies
+
+Then, you can use the following code for inference:
+
+import torch
+
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x
+
+img = 'https://ultralytics.com/images/zidane.jpg'
+
+results = model(img)
+results.print()  # Display results
+results.show()
+results.save(save_dir='results/')
