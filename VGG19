@@ -1,0 +1,53 @@
+import tensorflow as tf
+from tensorflow.keras.applications import VGG19
+
+# Load the pre-trained VGG19 model, including the top classification layer
+model = VGG19(weights='imagenet')
+
+# Print the model summary to see its architecture
+model.summary()
+
+
+#And here's how to do the same using PyTorch:
+
+import torch
+import torchvision.models as models
+import torchvision.transforms as transforms
+from PIL import Image
+
+# Load the pre-trained VGG19 model
+model = models.vgg19(pretrained=True)
+model.eval() # Set the model to evaluation mode
+
+print(model)
+
+# Example of how to preprocess an image for the model
+transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Load an example image (replace 'your_image.jpg' with the actual path)
+try:
+    image = Image.open('your_image.jpg').convert('RGB')
+    input_tensor = transform(image)
+    input_batch = input_tensor.unsqueeze(0) # Create a mini-batch as expected by the model
+
+    # Move the input and model to GPU if available
+    if torch.cuda.is_available():
+        input_batch = input_batch.to('cuda')
+        model.to('cuda')
+
+    with torch.no_grad():
+        output = model(input_batch)
+
+    # The output is a tensor of shape (1, 1000) representing the probabilities for each class
+    # You can further process this output to get the predicted class
+    print(output.shape)
+
+except FileNotFoundError:
+    print("Error: 'your_image.jpg' not found.")
+except Exception as e:
+    print(f"An error occurred: {e}")
